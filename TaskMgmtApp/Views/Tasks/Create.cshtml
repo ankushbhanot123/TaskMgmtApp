@@ -1,0 +1,181 @@
+﻿@{
+    ViewBag.Title = "Create";
+}
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js">
+</script>
+
+<script type="text/javascript">
+    var IsUpdate = false;
+    var RecordID = 0;
+    $(document).ready(function () {
+        var id = document.URL.substring(document.URL.lastIndexOf("/"), document.URL.length).replace("/", "");
+       // alert(id);
+
+        if (!isNaN(id) && id != '') {
+
+            IsUpdate = true;
+            fillForm(id);
+            RecordID = id;
+        }
+    });
+
+    function fillForm(id) {
+        $.ajax({
+            type: "GET",
+            url: "http://localhost:2590/api/Task/" + id,
+            success: function (data) {
+                if (data.Status)
+                    $("#chkStatus").click();
+                $("#txtName").val(data.Name);
+                $("#ddPriority").val(data.Priority);
+                $("#txtDate").val(data.Date.substring(0, data.Date.lastIndexOf('T')));
+                $("#txtEstimatedCost").val(data.EstimatedCost);
+                $("#txtDesc").val(data.Description);
+
+                //$("#tblBody").append("<tr><td>" + data[i].Name + "</td><td>" + data[i].Priority + "</td><td>" + data[i].Date + "</td><td>" + data[i].EstimatedCost + "</td><td>" + data[i].Description + "</td><td>" + data[i].AddedOn + "</td><td>" + data[i].Status + "</td><td><img src='../Content/images/edit.png' style='width:25px;cursor:pointer;' onclick='goEdit(" + data[i].Id + ");' />&nbsp;<img src='../Content/images/del.png' style='width:25px;cursor:pointer;' onclick='deleteIt(" + data[i].Id + ");' /> </td></tr>");
+
+            },
+            error: function (e) { alert('error is :' + e); }
+        });
+    }
+
+    function submitIt() {
+        
+        try
+        {
+            var status = "false";
+            if ($("#chkStatus").prop('checked'))
+                status = "true";
+            
+            if (IsUpdate) {
+                alert(RecordID);
+                $.ajax({
+                    type: "PUT",
+                    data: {
+                        "Id": RecordID,
+                        "Name": $("#txtName").val(),
+                        "Priority": $("#ddPriority").val(),
+                        "Date": $("#txtDate").val(),
+                        "EstimatedCost": parseInt($("#txtEstimatedCost").val()),
+                        "Description": $("#txtDesc").val(),
+                        "Status": status
+                    },
+                    url: "http://localhost:2590/api/Task/" + RecordID,
+                    success: function (data) {
+                        alert('Record Updated Successfully!!');
+                        window.location.href = 'Index';
+                    },
+                    error: function (e) {
+                    }
+                });
+            }
+            else {
+                $.ajax({
+                    type: "POST",
+                    data: {
+                        "Name": $("#txtName").val(),
+                        "Priority": $("#ddPriority").val(),
+                        "Date": $("#txtDate").val(),
+                        "EstimatedCost": parseInt($("#txtEstimatedCost").val()),
+                        "Description": $("#txtDesc").val(),
+                        "Status": status
+                    },
+                    url: "http://localhost:2590/api/Task",
+                    success: function (data) {
+                        alert('Record Updated Successfully!!');
+                        window.location.href = 'Index';
+                    },
+                    error: function (e) {
+                    }
+                });
+            }
+        }
+        catch (e) { alert(e);}
+    }
+
+</script>
+
+<h2>Create</h2>
+
+
+    <form id="form1" onsubmit="submitIt();">
+    <div class="form-horizontal">
+        <h4>Tasks</h4>
+        <hr />        
+        <div class="form-group">
+                <div class="col-md-4">
+                    Name
+                </div>
+                <div class="col-md-6">
+                    <input type="text" id="txtName" name="txtName" required />
+                </div>
+            </div>
+
+        <div class="form-group">
+            <div class="col-md-4">
+                Priority
+                </div>
+                <div class="col-md-6">
+                    <select id="ddPriority" name="ddPriority">
+                        <option value="1">Priority 1</option>
+                        <option value="2">Priority 2</option>
+                        <option value="3">Priority 3</option>
+                        <option value="4">Priority 4</option>
+                        <option value="5">Priority 5</option>
+                    </select>
+                </div>
+            </div>
+
+        <div class="form-group">
+            <div class="col-md-4">
+                Date
+                </div>
+                <div class="col-md-6">
+                    <input type="date" id="txtDate" name="txtDate" required />
+                </div>
+            </div>
+
+        <div class="form-group">
+            <div class="col-md-4">
+                Estimated Cost
+                </div>
+                <div class="col-md-6">
+                    <input type="number" id="txtEstimatedCost" name="txtEstimatedCost" required />
+                </div>
+            </div>
+
+        <div class="form-group">
+            <div class="col-md-4">
+                Description
+                </div>
+                <div class="col-md-6">
+                    <textarea id="txtDesc" name="txtDesc"></textarea>
+                </div>
+            </div>
+
+        <div class="form-group">
+            <div class="col-md-4">
+                Status
+                </div>
+                <div class="col-md-6">
+                    <div class="checkbox">
+                        <input type="checkbox" id="chkStatus" name="chkStatus" />
+                    </div>
+                </div>
+            </div>
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Create" class="btn btn-default"  />
+            </div>
+        </div>
+    </div>
+</form>
+
+<div>
+    @Html.ActionLink("Back to List", "Index")
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}
